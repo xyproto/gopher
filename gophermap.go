@@ -1,4 +1,4 @@
-package main
+package gopher
 
 import (
 	"bufio"
@@ -13,13 +13,13 @@ var (
 )
 
 // Gophermap parses the given file 'fn' and returns a proper gopher list of items
-func Gophermap(fn string) List {
+func (conf *Config) Gophermap(fn string) List {
 	var l List
 
 	f, err := os.Open(fn)
 	defer f.Close()
 	if err != nil {
-		return Error("gophermap error")
+		return conf.Error("gophermap error")
 	}
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
@@ -28,21 +28,21 @@ func Gophermap(fn string) List {
 			itemtype, cols := parse(row)
 			p, _ := strconv.Atoi(cols[3]) // port
 			switch itemtype {
-			case G_MENU:
+			case GopherMenu:
 				fallthrough
-			case G_TEXT:
-				i := Row(itemtype, cols[0], cols[1], cols[2], p)
+			case GopherText:
+				i := conf.Row(itemtype, cols[0], cols[1], cols[2], p)
 				l = append(l, i)
 			case '!':
 				if cols[0] == "!" && cols[1] == "list" {
-					l = append(l, ListDir(filepath.Dir(fn))...)
+					l = append(l, conf.ListDir(filepath.Dir(fn))...)
 				}
 			default:
-				i := Row(G_ERROR, strings.Replace(row, "\t", "\\t", -1), "", "", 0)
+				i := conf.Row(GopherError, strings.Replace(row, "\t", "\\t", -1), "", "", 0)
 				l = append(l, i)
 			}
 		} else {
-			l = append(l, Row(G_INFO, row, "", "", 0))
+			l = append(l, conf.Row(GopherInfo, row, "", "", 0))
 		}
 	}
 
@@ -52,22 +52,22 @@ func Gophermap(fn string) List {
 func parse(s string) (byte, []string) {
 	cols := strings.Split(s, "\t")
 	itemtype := []byte(cols[0][:1])[0]
-	f_name := cols[0][1:len(cols[0])]
-	f_selector := ""
-	f_host := ""
-	f_port := ""
+	fName := cols[0][1:len(cols[0])]
+	fSelector := ""
+	fHost := ""
+	fPort := ""
 
 	if len(cols) >= 4 {
-		f_selector = cols[1]
-		f_host = cols[2]
-		f_port = cols[3]
+		fSelector = cols[1]
+		fHost = cols[2]
+		fPort = cols[3]
 	} else if len(cols) >= 3 {
-		f_selector = cols[1]
-		f_host = cols[2]
+		fSelector = cols[1]
+		fHost = cols[2]
 	} else if len(cols) >= 2 {
-		f_selector = cols[1]
+		fSelector = cols[1]
 	}
 
-	fields := []string{f_name, f_selector, f_host, f_port}
+	fields := []string{fName, fSelector, fHost, fPort}
 	return itemtype, fields
 }

@@ -1,10 +1,3 @@
-# Gopher
-
-This is a modified fork of [prodhe/gopher](https://github.com/prodhe/gopher), for serving files over the [Gopher protocol](https://tools.ietf.org/html/rfc1436).
-
-## Example use
-
-```go
 package main
 
 import (
@@ -23,4 +16,3 @@ func main() {
 		log.Println("Got a request from " + host + " to access: " + path)
 	}))
 }
-```
